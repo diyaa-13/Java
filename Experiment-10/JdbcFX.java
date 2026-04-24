@@ -19,18 +19,19 @@ public class JdbcFX extends Application {
     TableView<Student> table = new TableView<>();
     ObservableList<Student> data = FXCollections.observableArrayList();
 
-    private static final String URL = "jdbc:mysql://localhost:3306/college_db?useSSL=false&allowPublicKeyRetrieval=true";
-    private static final String USER = "root";
-    private static final String PASSWORD = "YOUR_PASSWORD";
-
     Connection getConnection() throws Exception {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        return DriverManager.getConnection(URL, USER, PASSWORD);
+        return DriverManager.getConnection(
+            "jdbc:mysql://localhost:3306/college_db?useSSL=false&allowPublicKeyRetrieval=true",
+            "root",
+            "stargirl15"
+        );
     }
 
     @Override
     public void start(Stage stage) {
 
+        // Form
         GridPane form = new GridPane();
         form.setPadding(new Insets(10));
         form.setHgap(10);
@@ -48,6 +49,7 @@ public class JdbcFX extends Application {
         form.add(new Label("Marks"), 0, 3);
         form.add(marksField, 1, 3);
 
+        // Table
         TableColumn<Student, Integer> col1 = new TableColumn<>("Roll");
         col1.setCellValueFactory(c -> c.getValue().rollProperty().asObject());
 
@@ -63,6 +65,7 @@ public class JdbcFX extends Application {
         table.getColumns().addAll(col1, col2, col3, col4);
         table.setItems(data);
 
+        // Buttons
         Button insertBtn = new Button("Insert");
         Button viewBtn = new Button("View");
         Button updateBtn = new Button("Update");
@@ -70,6 +73,7 @@ public class JdbcFX extends Application {
 
         HBox buttons = new HBox(10, insertBtn, viewBtn, updateBtn, deleteBtn);
 
+        // Actions
         insertBtn.setOnAction(e -> insert());
         viewBtn.setOnAction(e -> load());
         updateBtn.setOnAction(e -> update());
@@ -94,9 +98,7 @@ public class JdbcFX extends Application {
             ps.setDouble(4, Double.parseDouble(marksField.getText()));
             ps.executeUpdate();
             load();
-        } catch (Exception e) {
-            showError(e);
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     void load() {
@@ -111,9 +113,7 @@ public class JdbcFX extends Application {
                     rs.getDouble("marks")
                 ));
             }
-        } catch (Exception e) {
-            showError(e);
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     void update() {
@@ -127,9 +127,7 @@ public class JdbcFX extends Application {
             ps.setInt(4, Integer.parseInt(rollField.getText()));
             ps.executeUpdate();
             load();
-        } catch (Exception e) {
-            showError(e);
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     void delete() {
@@ -140,20 +138,29 @@ public class JdbcFX extends Application {
             ps.setInt(1, Integer.parseInt(rollField.getText()));
             ps.executeUpdate();
             load();
-        } catch (Exception e) {
-            showError(e);
-        }
-    }
-
-    void showError(Exception e) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Error");
-        alert.setHeaderText("Something went wrong");
-        alert.setContentText(e.getMessage());
-        alert.showAndWait();
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     public static void main(String[] args) {
-        launch();
+        launch(args);
+    }
+
+    // Model class
+    public static class Student {
+        private IntegerProperty roll;
+        private StringProperty name, branch;
+        private DoubleProperty marks;
+
+        public Student(int r, String n, String b, double m) {
+            roll = new SimpleIntegerProperty(r);
+            name = new SimpleStringProperty(n);
+            branch = new SimpleStringProperty(b);
+            marks = new SimpleDoubleProperty(m);
+        }
+
+        public IntegerProperty rollProperty() { return roll; }
+        public StringProperty nameProperty() { return name; }
+        public StringProperty branchProperty() { return branch; }
+        public DoubleProperty marksProperty() { return marks; }
     }
 }
